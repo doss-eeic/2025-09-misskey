@@ -5,8 +5,8 @@
 
 import * as Misskey from 'misskey-js';
 import { markRaw } from 'vue';
-import { $i } from '@/i.js';
 import { wsOrigin } from '@@/js/config.js';
+import { $i } from '@/i.js';
 // TODO: No WebsocketモードでStreamMockが使えそう
 //import { StreamMock } from '@/utility/stream-mock.js';
 
@@ -28,14 +28,18 @@ export function useStream(): Misskey.IStream {
 	if (timeoutHeartBeat) window.clearTimeout(timeoutHeartBeat);
 	timeoutHeartBeat = window.setTimeout(heartbeat, HEART_BEAT_INTERVAL);
 
-	// send heartbeat right now when last send time is over HEART_BEAT_INTERVAL
+	// - send heartbeat right now when last send time is over HEART_BEAT_INTERVAL
+	// - send client visibility change event
 	window.document.addEventListener('visibilitychange', () => {
-		if (
-			!stream
-			|| window.document.visibilityState !== 'visible'
-			|| Date.now() - lastHeartbeatCall < HEART_BEAT_INTERVAL
-		) return;
-		heartbeat();
+		if (!stream) return;
+		if (window.document.visibilityState !== 'visible') {
+			stream.send('visibility', { visible: false });
+		} else {
+			stream.send('visibility', { visible: true });
+			if (Date.now() - lastHeartbeatCall >= HEART_BEAT_INTERVAL) {
+				heartbeat();
+			}
+		}
 	});
 
 	return stream;
