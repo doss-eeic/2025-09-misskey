@@ -89,25 +89,62 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<MkPollEditor v-if="poll" v-model="poll" @destroyed="poll = null"/>
 	<MkNotePreview v-if="showPreview" :class="$style.preview" :text="text" :files="files" :poll="poll ?? undefined" :useCw="useCw" :cw="cw" :user="postAccount ?? $i"/>
 	<div v-if="showingOptions" style="padding: 8px 16px;">
-	</div>
-	<footer :class="$style.footer">
-		<div :class="$style.footerLeft">
-			<button v-tooltip="i18n.ts.attachFile + ' (' + i18n.ts.upload + ')'" class="_button" :class="$style.footerButton" @click="chooseFileFromPc"><i class="ti ti-photo-plus"></i></button>
-			<button v-tooltip="i18n.ts.attachFile + ' (' + i18n.ts.fromDrive + ')'" class="_button" :class="$style.footerButton" @click="chooseFileFromDrive"><i class="ti ti-cloud-download"></i></button>
-			<button v-tooltip="i18n.ts.poll" class="_button" :class="[$style.footerButton, { [$style.footerButtonActive]: poll }]" @click="togglePoll"><i class="ti ti-chart-arrows"></i></button>
-			<button v-tooltip="i18n.ts.useCw" class="_button" :class="[$style.footerButton, { [$style.footerButtonActive]: useCw }]" @click="useCw = !useCw"><i class="ti ti-eye-off"></i></button>
-			<button v-tooltip="i18n.ts.hashtags" class="_button" :class="[$style.footerButton, { [$style.footerButtonActive]: withHashtags }]" @click="withHashtags = !withHashtags"><i class="ti ti-hash"></i></button>
-			<button v-tooltip="i18n.ts.mention" class="_button" :class="$style.footerButton" @click="insertMention"><i class="ti ti-at"></i></button>
-			<button v-if="showAddMfmFunction" v-tooltip="i18n.ts.addMfmFunction" :class="['_button', $style.footerButton]" @click="insertMfmFunction"><i class="ti ti-palette"></i></button>
-			<button v-if="postFormActions.length > 0" v-tooltip="i18n.ts.plugins" class="_button" :class="$style.footerButton" @click="showActions"><i class="ti ti-plug"></i></button>
+    </div>
+	<div v-if="showGeminiPromptInput" :class="$style.geminiPromptContainer">
+		<textarea 
+			ref="geminiPromptInputEl"
+			v-model="customGeminiPrompt" 
+			:class="$style.geminiPromptInput" 
+			placeholder="指示を入力"
+			rows="4"
+		></textarea>
+		<div :class="$style.geminiButtonContainer">
+			<button 
+				class="_button" 
+				@click="submitForRefinement"
+				:disabled="geminiLoading"
+			>
+				<i class="ti ti-wand"></i> 既存テキストを修正
+			</button>
+			<button 
+				class="_button primary" 
+				@click="submitForGeneration"
+				:disabled="geminiLoading"
+			>
+				<i class="ti ti-sparkles"></i> 新規生成
+			</button>
 		</div>
-		<div :class="$style.footerRight">
-			<button v-tooltip="i18n.ts.emoji" :class="['_button', $style.footerButton]" @click="insertEmoji"><i class="ti ti-mood-happy"></i></button>
-		</div>
-	</footer>
-	<datalist id="hashtags">
-		<option v-for="hashtag in recentHashtags" :key="hashtag" :value="hashtag"/>
-	</datalist>
+    </div>
+    <footer :class="$style.footer">
+        <div :class="$style.footerLeft">
+            <button v-tooltip="i18n.ts.attachFile + ' (' + i18n.ts.upload + ')'" class="_button" :class="$style.footerButton" @click="chooseFileFromPc"><i class="ti ti-photo-plus"></i></button>
+            <button v-tooltip="i18n.ts.attachFile + ' (' + i18n.ts.fromDrive + ')'" class="_button" :class="$style.footerButton" @click="chooseFileFromDrive"><i class="ti ti-cloud-download"></i></button>
+            <button v-tooltip="i18n.ts.poll" class="_button" :class="[$style.footerButton, { [$style.footerButtonActive]: poll }]" @click="togglePoll"><i class="ti ti-chart-arrows"></i></button>
+            <button v-tooltip="i18n.ts.useCw" class="_button" :class="[$style.footerButton, { [$style.footerButtonActive]: useCw }]" @click="useCw = !useCw"><i class="ti ti-eye-off"></i></button>
+            <button v-tooltip="i18n.ts.hashtags" class="_button" :class="[$style.footerButton, { [$style.footerButtonActive]: withHashtags }]" @click="withHashtags = !withHashtags"><i class="ti ti-hash"></i></button>
+            <button v-tooltip="i18n.ts.mention" class="_button" :class="$style.footerButton" @click="insertMention"><i class="ti ti-at"></i></button>
+            <button v-if="showAddMfmFunction" v-tooltip="i18n.ts.addMfmFunction" :class="['_button', $style.footerButton]" @click="insertMfmFunction"><i class="ti ti-palette"></i></button>
+            <button v-if="postFormActions.length > 0" v-tooltip="i18n.ts.plugins" class="_button" :class="$style.footerButton" @click="showActions"><i class="ti ti-plug"></i></button>
+            
+            <button 
+                v-tooltip="'AIアシスト'" 
+                class="_button" 
+                :class="[$style.footerButton, { [$style.footerButtonActive]: showGeminiPromptInput || geminiLoading }]"
+                :disabled="geminiLoading"
+                @click="toggleGeminiPromptInput"
+            >
+                <i v-if="geminiLoading" class="ti ti-loader animate-spin"></i>
+                <i v-else class="ti ti-sparkles"></i>
+            </button>
+            </div>
+        <div :class="$style.footerRight">
+            <button v-tooltip="i18n.ts.emoji" :class="['_button', $style.footerButton]" @click="insertEmoji"><i class="ti ti-mood-happy"></i></button>
+        </div>
+    </footer>
+
+    <datalist id="hashtags">
+        <option v-for="hashtag in recentHashtags" :key="hashtag" :value="hashtag"/>
+    </datalist>
 </div>
 </template>
 
@@ -154,6 +191,7 @@ import { DI } from '@/di.js';
 import { globalEvents } from '@/events.js';
 import { checkDragDataType, getDragData } from '@/drag-and-drop.js';
 import { useUploader } from '@/composables/use-uploader.js';
+import { GoogleGenAI } from '@google/genai'; // Gemini API SDKをインポート
 
 const $i = ensureSignin();
 
@@ -1376,6 +1414,132 @@ defineExpose({
 	abortUploader: () => uploader.abortAll(),
 	canClose,
 });
+
+const geminiLoading = ref(false);
+const geminiErrorMessage = ref<string | null>(null);
+const geminiPromptInputEl = ref<HTMLTextAreaElement | null>(null);
+const showGeminiPromptInput = ref(false); // カスタムプロンプト入力欄の表示状態
+const customGeminiPrompt = ref(''); // カスタムプロンプトの内容
+
+
+async function callGeminiApi(promptText: string) {
+  if (!text.value.trim()) {
+	os.alert({
+	  type: 'info',
+	  text: 'ツイートのアイデアを生成するには、まず何かテキストを入力してください。',
+	});
+	return;
+  }
+
+  geminiLoading.value = true;
+  geminiErrorMessage.value = null;
+
+  try {
+	const apiKey = import.meta.env.VITE_GEMINI_API_KEY; 
+	// const apiKey = "AIzaSyCF0Rtt0n623ZTyZlMWL_-XqKRUTEXOfNw"; // 取り合えず直書き
+	if (!apiKey) {
+	  throw new Error('Gemini APIキーが設定されていません');
+	}
+	const genAI = new GoogleGenAI({ apiKey });
+	
+	const response = await genAI.models.generateContent({
+		model: 'gemini-2.0-flash-001',
+		contents: promptText,
+	});
+
+	let generatedText = '';
+
+	if (response == null) {
+		throw new Error('No response from Gemini API');
+	}
+
+	const textProp = (response as any).text;
+
+	if (typeof textProp === 'function') {
+		// If it's a function, call it.
+		const val = textProp();
+		generatedText = val != null ? String(val) : '';
+	} else if (typeof textProp === 'string') {
+		// If it's already a string (getter), use it.
+		generatedText = textProp;
+	} else if ((response as any).candidates && Array.isArray((response as any).candidates) && (response as any).candidates[0]) {
+		// Fallback for alternative response shapes (candidates, output, etc.)
+		const cand = (response as any).candidates[0];
+		if (typeof cand === 'string') {
+			generatedText = cand;
+		} else if (cand.output) {
+			generatedText = String(cand.output);
+		} else if (cand.content) {
+			generatedText = String(cand.content);
+		} else {
+			generatedText = String(cand);
+		}
+	} else if ((response as any).outputText) {
+		generatedText = String((response as any).outputText);
+	} else {
+		// Last resort: coerce response to string
+		generatedText = String(response);
+	}
+
+	generatedText = generatedText.trim();
+
+	// 生成されたテキストでtextareaを更新
+	text.value = generatedText.trim();
+
+  } catch (e: any) {
+	console.error('Gemini API Error:', e);
+	geminiErrorMessage.value = `ツイート案の生成中にエラーが発生しました: ${e.message || '不明なエラー'}`;
+	os.alert({
+	  type: 'error',
+	  text: geminiErrorMessage.value,
+	});
+  } finally {
+	geminiLoading.value = false;
+  }
+}
+
+function toggleGeminiPromptInput() {
+    showGeminiPromptInput.value = !showGeminiPromptInput.value;
+    if (showGeminiPromptInput.value) {
+        nextTick(() => {
+            geminiPromptInputEl.value?.focus();
+        });
+    }
+}
+
+async function submitForRefinement() {
+    if (!text.value.trim()) {
+        os.alert({ type: 'info', text: '修正するには、まず本文にテキストを入力してください。' });
+        return;
+    }
+
+    const customInstruction = customGeminiPrompt.value.trim();
+    // カスタム指示がなければ、デフォルトの指示を設定
+    const instruction = customInstruction || 'この投稿がより魅力的になるように修正してください。';
+
+    const promptToSend = `${instruction}\n\n# 修正対象のテキスト:\n${text.value}`;
+    
+    await callGeminiApi(promptToSend);
+
+    showGeminiPromptInput.value = false;
+    customGeminiPrompt.value = '';
+}
+
+async function submitForGeneration() {
+    const customInstruction = customGeminiPrompt.value.trim();
+    if (!customInstruction) {
+        os.alert({ type: 'info', text: '新規生成するには、プロンプト入力欄に指示を入力してください。' });
+        return;
+    }
+
+    const promptToSend = `${customInstruction}をテーマに、魅力的なSNS投稿を140字以内で作成してください。絵文字やハッシュタグも効果的に使用してください。`;
+    
+    await callGeminiApi(promptToSend);
+
+    showGeminiPromptInput.value = false;
+    customGeminiPrompt.value = '';
+}
+
 </script>
 
 <style lang="scss" module>
@@ -1413,8 +1577,8 @@ defineExpose({
 	padding: 8px;
 }
 
-.account {
-}
+// .account {
+// }
 
 .avatar {
 	width: 28px;
@@ -1664,7 +1828,8 @@ html[data-color-scheme=light] .preview {
 	max-width: 100%;
 	min-width: 100%;
 	width: 100%;
-	min-height: 90px;
+	/* increased vertical space for the post input */
+	min-height: 140px;
 	height: 100%;
 }
 
@@ -1761,7 +1926,8 @@ html[data-color-scheme=light] .preview {
 	}
 
 	.text {
-		min-height: 80px;
+		/* responsive smaller screens: keep it larger than before */
+		min-height: 120px;
 	}
 
 	.footer {
@@ -1787,4 +1953,54 @@ html[data-color-scheme=light] .preview {
 	}
 
 }
+
+.geminiPromptContainer {
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border-top: 1px solid var(--MI_THEME-divider);
+    background: light-dark(rgba(0, 0, 0, 0.03), rgba(255, 255, 255, 0.03));
+}
+
+.geminiPromptInput {
+    display: block;
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 0.95em;
+    border: 1px solid var(--MI_THEME-divider);
+    border-radius: 6px;
+    background: var(--MI_THEME-bg);
+    color: var(--MI_THEME-fg);
+    resize: vertical;
+	min-height: 80px;
+    &:focus {
+        outline: none;
+        border-color: var(--MI_THEME-accent);
+    }
+}
+
+.geminiPromptSubmitButton {
+    align-self: flex-end; // 右寄せ
+    padding: 8px 16px;
+    font-size: 0.9em;
+    border-radius: 6px;
+    min-width: 80px;
+}
+
+.geminiButtonContainer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px; /* ボタン間のスペース */
+
+    > button {
+        padding: 8px 12px;
+        font-size: 0.9em;
+        border-radius: 6px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+}
+
 </style>
