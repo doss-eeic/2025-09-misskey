@@ -29,6 +29,9 @@ export default class Connection {
 	public user?: MiUser;
 	public token?: MiAccessToken;
 	private wsConnection: WebSocket.WebSocket;
+	private _buffer: string[] = [];
+	private _flushTimer: NodeJS.Timeout | null = null;
+	private _isClientVisible = true;
 	public subscriber: StreamEventEmitter;
 	private channels: Channel[] = [];
 	private subscribingNotes: Partial<Record<string, number>> = {};
@@ -111,7 +114,6 @@ export default class Connection {
 		}
 
 		const { type, body } = obj;
-
 		switch (type) {
 			case 'readNotification': this.onReadNotification(body); break;
 			case 'subNote': this.onSubscribeNote(body); break;
@@ -123,6 +125,7 @@ export default class Connection {
 			case 'disconnect': this.onChannelDisconnectRequested(body); break;
 			case 'channel': this.onChannelMessageRequested(body); break;
 			case 'ch': this.onChannelMessageRequested(body); break; // alias
+			case 'visibility': this.onVisibilityChanged(body); break;
 		}
 	}
 
@@ -206,14 +209,41 @@ export default class Connection {
 	}
 
 	/**
+	 * クライアントの表示状態が変わったとき
+	 */
+	@bindThis
+	private onVisibilityChanged(payload: JsonValue | undefined) {
+		if (!isJsonObject(payload)) return;
+		const { visible } = payload;
+		if (typeof visible !== 'boolean') return;
+		this._isClientVisible = visible;
+		if (this._isClientVisible === true) this.flushBuffer();
+	}
+	/**
 	 * クライアントにメッセージ送信
 	 */
 	@bindThis
 	public sendMessageToWs(type: string, payload: JsonObject) {
-		this.wsConnection.send(JSON.stringify({
+		this.addToBuffer({
 			type: type,
 			body: payload,
-		}));
+		});
+	}
+	@bindThis
+	private addToBuffer(data: any) {
+		this._buffer.push(data);
+		this._flushTimer ??= setTimeout(() => {
+			if (this._isClientVisible === true) this.flushBuffer();
+			this._flushTimer = null;
+		}, 0.2);
+	}
+	@bindThis
+	private flushBuffer() {
+		if (this._buffer.length === 0) return;
+		console.log(`[Connection] flushBuffer: ${this._buffer.length} items`);
+		// まとめて送信
+		this.wsConnection.send(JSON.stringify(this._buffer));
+		this._buffer = [];
 	}
 
 	/**
