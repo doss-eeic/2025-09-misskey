@@ -235,7 +235,7 @@ export default class Connection {
 		this._flushTimer ??= setTimeout(() => {
 			if (this._isClientVisible === true) this.flushBuffer();
 			this._flushTimer = null;
-		}, 5000);
+		}, 0.2);
 	}
 	@bindThis
 	private flushBuffer() {
