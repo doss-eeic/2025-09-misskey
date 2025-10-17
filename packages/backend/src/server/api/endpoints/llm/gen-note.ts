@@ -52,9 +52,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				if (ps.noteDraft.length > MAX_DRAFT_LENGTH) {
 					throw new Error(`noteDraft must be ${MAX_DRAFT_LENGTH} characters or less`);
 				}
-				prompt = `以下のユーザーの指示に従って、SNSに投稿する文章の下書きを修正してください。\n指示: ${ps.userQuery}\n下書き: ${ps.noteDraft}`;
+				prompt = `以下のユーザーの指示に従って、SNSに投稿する文章の下書きを修正してください。前置きは書かず投稿の本文のみを回答してください。絵文字やハッシュタグも効果的に使用してください。\n指示: ${ps.userQuery}\n下書き: ${ps.noteDraft}`;
 			} else {
-				prompt = `以下のユーザーの指示に従って、SNSに投稿する文章をしてください。\n指示: ${ps.userQuery}`;
+				prompt = `以下のユーザーの指示に従って、SNSに投稿する文章をしてください。前置きは書かず投稿の本文のみを回答してください。絵文字やハッシュタグも効果的に使用してください。\n指示: ${ps.userQuery}`;
 			}
 
 			const generatedText = await this.llmService.generateText(prompt);

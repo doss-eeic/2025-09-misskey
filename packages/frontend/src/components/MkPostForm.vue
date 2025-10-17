@@ -1505,10 +1505,9 @@ async function submitForGeneration() {
         os.alert({ type: 'info', text: '新規生成するには、プロンプト入力欄に指示を入力してください。' });
         return;
     }
-    const promptToSend = `${customInstruction}をテーマに、魅力的なSNS投稿を140字以内で作成してください。絵文字やハッシュタグも効果的に使用してください。`;
     
     // バックエンドAPIを呼び出す (下書きはnull、'append'モードを指定)
-    await callGeminiApi(promptToSend, null, 'append');
+    await callGeminiApi(customInstruction, null, 'append');
 
     showGeminiPromptInput.value = false;
     customGeminiPrompt.value = '';
