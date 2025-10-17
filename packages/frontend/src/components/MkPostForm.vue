@@ -1421,80 +1421,57 @@ const geminiPromptInputEl = ref<HTMLTextAreaElement | null>(null);
 const showGeminiPromptInput = ref(false); // カスタムプロンプト入力欄の表示状態
 const customGeminiPrompt = ref(''); // カスタムプロンプトの内容
 
-
-async function callGeminiApi(promptText: string) {
-  if (!text.value.trim()) {
-	os.alert({
-	  type: 'info',
-	  text: 'ツイートのアイデアを生成するには、まず何かテキストを入力してください。',
-	});
-	return;
-  }
-
+async function callGeminiApi(promptText: string, draftText: string | null, mode: 'replace' | 'append') {
   geminiLoading.value = true;
   geminiErrorMessage.value = null;
 
   try {
-	const apiKey = import.meta.env.VITE_GEMINI_API_KEY; 
-	// const apiKey = "AIzaSyCF0Rtt0n623ZTyZlMWL_-XqKRUTEXOfNw"; // 取り合えず直書き
-	if (!apiKey) {
-	  throw new Error('Gemini APIキーが設定されていません');
-	}
-	const genAI = new GoogleGenAI({ apiKey });
-	
-	const response = await genAI.models.generateContent({
-		model: 'gemini-2.0-flash-001',
-		contents: promptText,
-	});
+    // バックエンドのエンドポイントを呼び出す
+    const response = await misskeyApi('llm/gen-note', {
+      userQuery: promptText,
+      noteDraft: draftText,
+    });
 
-	let generatedText = '';
+	console.log('Gemini API Response:', response);
 
-	if (response == null) {
-		throw new Error('No response from Gemini API');
+	// レスポンスから生成されたテキストを取得（型を狭めて安全にアクセス）
+	// misskeyApi の戻り値の型が不定なため、一旦 any にキャストしてプロパティ存在を確認する
+	const generatedText = (response as any)?.suggestedText ?? null;
+
+	if (generatedText == null || typeof generatedText !== 'string') {
+		throw new Error('APIから有効なテキストが返されませんでした。');
 	}
 
-	const textProp = (response as any).text;
+    const trimmedGeneratedText = generatedText.trim();
 
-	if (typeof textProp === 'function') {
-		// If it's a function, call it.
-		const val = textProp();
-		generatedText = val != null ? String(val) : '';
-	} else if (typeof textProp === 'string') {
-		// If it's already a string (getter), use it.
-		generatedText = textProp;
-	} else if ((response as any).candidates && Array.isArray((response as any).candidates) && (response as any).candidates[0]) {
-		// Fallback for alternative response shapes (candidates, output, etc.)
-		const cand = (response as any).candidates[0];
-		if (typeof cand === 'string') {
-			generatedText = cand;
-		} else if (cand.output) {
-			generatedText = String(cand.output);
-		} else if (cand.content) {
-			generatedText = String(cand.content);
-		} else {
-			generatedText = String(cand);
-		}
-	} else if ((response as any).outputText) {
-		generatedText = String((response as any).outputText);
-	} else {
-		// Last resort: coerce response to string
-		generatedText = String(response);
-	}
+    // modeに応じてテキストエリアの更新方法を分岐
+    if (mode === 'replace') {
+      // 修正モード: 常に全体を上書き
+      text.value = trimmedGeneratedText;
+    } else { // appendモード
+      if (text.value.trim() !== '') {
+        // 新規生成モードで、既にテキストがある場合は改行を2つ挟んで追記
+        text.value += '\n\n' + trimmedGeneratedText;
+      } else {
+        // テキストが空の場合は、そのまま設定
+        text.value = trimmedGeneratedText;
+      }
+    }
 
-	generatedText = generatedText.trim();
-
-	// 生成されたテキストでtextareaを更新
-	text.value = generatedText.trim();
+    os.alert({
+        type: 'success',
+        text: 'テキストが生成されました！',
+    });
 
   } catch (e: any) {
-	console.error('Gemini API Error:', e);
-	geminiErrorMessage.value = `ツイート案の生成中にエラーが発生しました: ${e.message || '不明なエラー'}`;
-	os.alert({
-	  type: 'error',
-	  text: geminiErrorMessage.value,
-	});
+    console.error('Gemini API Error:', e);
+    geminiErrorMessage.value = `ツイート案の生成中にエラーが発生しました: ${e.message || '不明なエラー'}`;
+    os.alert({
+      type: 'error',
+      text: geminiErrorMessage.value,
+    });
   } finally {
-	geminiLoading.value = false;
+    geminiLoading.value = false;
   }
 }
 
@@ -1512,14 +1489,11 @@ async function submitForRefinement() {
         os.alert({ type: 'info', text: '修正するには、まず本文にテキストを入力してください。' });
         return;
     }
-
     const customInstruction = customGeminiPrompt.value.trim();
-    // カスタム指示がなければ、デフォルトの指示を設定
     const instruction = customInstruction || 'この投稿がより魅力的になるように修正してください。';
-
-    const promptToSend = `${instruction}\n\n# 修正対象のテキスト:\n${text.value}`;
     
-    await callGeminiApi(promptToSend);
+    // バックエンドAPIを呼び出す (下書きを渡し、'replace'モードを指定)
+    await callGeminiApi(instruction, text.value, 'replace');
 
     showGeminiPromptInput.value = false;
     customGeminiPrompt.value = '';
@@ -1531,10 +1505,10 @@ async function submitForGeneration() {
         os.alert({ type: 'info', text: '新規生成するには、プロンプト入力欄に指示を入力してください。' });
         return;
     }
-
     const promptToSend = `${customInstruction}をテーマに、魅力的なSNS投稿を140字以内で作成してください。絵文字やハッシュタグも効果的に使用してください。`;
     
-    await callGeminiApi(promptToSend);
+    // バックエンドAPIを呼び出す (下書きはnull、'append'モードを指定)
+    await callGeminiApi(promptToSend, null, 'append');
 
     showGeminiPromptInput.value = false;
     customGeminiPrompt.value = '';

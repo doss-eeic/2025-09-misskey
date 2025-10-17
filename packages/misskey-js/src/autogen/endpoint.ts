@@ -474,6 +474,8 @@ import type {
 	InviteLimitResponse,
 	InviteListRequest,
 	InviteListResponse,
+	LlmGenNoteRequest,
+	LlmGenNoteResponse,
 	MetaRequest,
 	MetaResponse,
 	MiauthGenTokenRequest,
@@ -970,6 +972,7 @@ export type Endpoints = {
 	'invite/delete': { req: InviteDeleteRequest; res: EmptyResponse };
 	'invite/limit': { req: EmptyRequest; res: InviteLimitResponse };
 	'invite/list': { req: InviteListRequest; res: InviteListResponse };
+	'llm/gen-note': { req: LlmGenNoteRequest; res: LlmGenNoteResponse };
 	'meta': { req: MetaRequest; res: MetaResponse };
 	'miauth/gen-token': { req: MiauthGenTokenRequest; res: MiauthGenTokenResponse };
 	'mute/create': { req: MuteCreateRequest; res: EmptyResponse };

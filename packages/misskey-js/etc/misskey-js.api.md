@@ -1970,6 +1970,8 @@ declare namespace entities {
         InviteLimitResponse,
         InviteListRequest,
         InviteListResponse,
+        LlmGenNoteRequest,
+        LlmGenNoteResponse,
         MetaRequest,
         MetaResponse,
         MiauthGenTokenRequest,
@@ -2792,6 +2794,12 @@ type IWebhooksTestRequest = operations['i___webhooks___test']['requestBody']['co
 
 // @public (undocumented)
 type IWebhooksUpdateRequest = operations['i___webhooks___update']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type LlmGenNoteRequest = operations['llm___gen-note']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type LlmGenNoteResponse = operations['llm___gen-note']['responses']['200']['content']['application/json'];
 
 // @public (undocumented)
 type MeDetailed = components['schemas']['MeDetailed'];
