@@ -7,6 +7,7 @@ import { Injectable } from '@nestjs/common';
 import { bindThis } from '@/decorators.js';
 import { CacheService } from '@/core/CacheService.js';
 import { GoogleGenAI } from '@google/genai';
+import dotenv from 'dotenv';
 
 @Injectable()
 export class LlmService {
@@ -17,11 +18,33 @@ export class LlmService {
 	) {
 	}
 
-			if (!apiKey) {
-				throw new Error('Gemini API key is not set');
+	onModuleInit() {
+		dotenv.config();
+		
+		const apiKey = process.env.GEMINI_API_KEY;
+		console.log('Using Gemini API Key:', apiKey);
+			
+		if (!apiKey) {
+			throw new Error('Gemini API key is not set');
+		}
+
+		this.genAI = new GoogleGenAI({ apiKey });
+	}
+
 	@bindThis
 	public async generateText(prompt: string): Promise<string> {
-		await new Promise(resolve => setTimeout(resolve, 2000));
+		try {
+			const response = await this.genAI.models.generateContent({
+				model: 'gemini-2.0-flash-001',
+				contents: prompt,
+			});
+
+			let generatedText = '';
+
+			if (response == null) {
+				throw new Error('No response from Gemini API');
+			}
+
 			const textProp = (response as any).text;
 
 			if (typeof textProp === 'function') {
