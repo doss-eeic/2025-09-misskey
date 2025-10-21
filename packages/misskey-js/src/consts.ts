@@ -38,6 +38,8 @@ export const notificationTypes = [
 	'test',
 	'login',
 	'createToken',
+	'llmRequestSuccess',
+	'llmRequestFailed',
 ] as const;
 
 export const noteVisibilities = ['public', 'home', 'followers', 'specified'] as const;

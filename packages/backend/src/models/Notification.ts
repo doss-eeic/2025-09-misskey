@@ -113,6 +113,17 @@ export type MiNotification = {
 	id: string;
 	createdAt: string;
 } | {
+	type: 'llmRequestSuccess';
+	id: string;
+	createdAt: string;
+	eventId: string;
+} | {
+	type: 'llmRequestFailed';
+	id: string;
+	createdAt: string;
+	promptSnippet: string;
+} |
+{
 	type: 'app';
 	id: string;
 	createdAt: string;

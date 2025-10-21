@@ -44,6 +44,8 @@ export const notificationTypes = [
 	'exportCompleted',
 	'login',
 	'createToken',
+	'llmRequestSuccess',
+	'llmRequestFailed',
 	'app',
 	'test',
 ] as const;

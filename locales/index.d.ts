@@ -10468,6 +10468,14 @@ export interface Locale extends ILocale {
          * 心当たりがない場合は「{text}」を通じてアクセストークンを削除してください。
          */
         "createTokenDescription": ParameterizedString<"text">;
+        /**
+         * AIアシストによる生成が完了しました
+         */
+        "llmRequestSuccess": string;
+        /**
+         * AIアシストによる生成が失敗しました
+         */
+        "llmRequestFailed": string;
         "_types": {
             /**
              * すべて
@@ -10553,6 +10561,14 @@ export interface Locale extends ILocale {
              * 連携アプリからの通知
              */
             "app": string;
+            /**
+             * AIアシストによる生成が完了した
+             */
+            "llmRequestSuccess": string;
+            /**
+             * AIアシストによる生成が失敗した
+             */
+            "llmRequestFailed": string;
         };
         "_actions": {
             /**

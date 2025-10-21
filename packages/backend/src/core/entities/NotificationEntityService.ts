@@ -189,6 +189,12 @@ export class NotificationEntityService implements OnModuleInit {
 				exportedEntity: notification.exportedEntity,
 				fileId: notification.fileId,
 			} : {}),
+			...(notification.type === 'llmRequestSuccess' ? {
+				eventId: notification.eventId,
+			} : {}),
+			...(notification.type === 'llmRequestFailed' ? {
+				promptSnippet: notification.promptSnippet,
+			} : {}),
 			...(notification.type === 'app' ? {
 				body: notification.customBody,
 				header: notification.customHeader,

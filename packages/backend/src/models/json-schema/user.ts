@@ -616,6 +616,8 @@ export const packedMeDetailedOnlySchema = {
 				roleAssigned: { optional: true, ...notificationRecieveConfig },
 				chatRoomInvitationReceived: { optional: true, ...notificationRecieveConfig },
 				achievementEarned: { optional: true, ...notificationRecieveConfig },
+				llmRequestSuccess: { optional: true, ...notificationRecieveConfig },
+				llmRequestFailed: { optional: true, ...notificationRecieveConfig },
 				app: { optional: true, ...notificationRecieveConfig },
 				test: { optional: true, ...notificationRecieveConfig },
 			},

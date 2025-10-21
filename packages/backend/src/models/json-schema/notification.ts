@@ -385,6 +385,42 @@ export const packedNotificationSchema = {
 			},
 		},
 	}, {
+	// 	type: 'object',
+	// 	properties: {
+	// 		...baseSchema.properties,
+	// 		type: {
+	// 			type: 'string',
+	// 			optional: false, nullable: false,
+	// 			enum: ['llmRequestFailed'],
+	// 		},
+	// 		noteDraft: {
+	// 			type: 'object',
+	// 			ref: 'NoteDraft',
+	// 			optional: false, nullable: false,
+	// 		},
+	// 	},
+	// }, {
+	// スキーマの定義が必要なら更新する
+		type: 'object',
+		properties: {
+			...baseSchema.properties,
+			type: {
+				type: 'string',
+				optional: false, nullable: false,
+				enum: ['llmRequestFailed'],
+			},
+		},
+	}, {
+		type: 'object',
+		properties: {
+			...baseSchema.properties,
+			type: {
+				type: 'string',
+				optional: false, nullable: false,
+				enum: ['llmRequestSuccess'],
+			},
+		},
+	}, {
 		type: 'object',
 		properties: {
 			...baseSchema.properties,

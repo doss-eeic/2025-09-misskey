@@ -2688,6 +2688,8 @@ _notification:
   login: "Someone logged in"
   createToken: "An access token has been created"
   createTokenDescription: "If you have no idea, delete the access token through \"{text}\"."
+  llmRequestSuccess: "AI assist generation has been completed"
+  llmRequestFailed: "Failed to AI assist generation"
   _types:
     all: "All"
     note: "New notes"
@@ -2708,6 +2710,9 @@ _notification:
     createToken: "Create access token"
     test: "Notification test"
     app: "Notifications from linked apps"
+    llmRequestSuccess: "AI assist generation has been completed"
+    llmRequestFailed: "Failed to AI assist generation"
+
   _actions:
     followBack: "followed you back"
     reply: "Reply"
