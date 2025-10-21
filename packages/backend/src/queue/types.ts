@@ -134,6 +134,12 @@ export type UserWebhookDeliverJobData<T extends WebhookEventTypes = WebhookEvent
 	eventId: string;
 };
 
+export type LlmRequestJobData = {
+	userId: MiUser['id'];
+	prompt: string,
+	eventId: string;
+};
+
 export type ThinUser = {
 	id: MiUser['id'];
 };

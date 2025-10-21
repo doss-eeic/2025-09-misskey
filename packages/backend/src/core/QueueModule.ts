@@ -17,6 +17,7 @@ import {
 	UserWebhookDeliverJobData,
 	SystemWebhookDeliverJobData,
 	PostScheduledNoteJobData,
+	LlmRequestJobData,
 } from '../queue/types.js';
 import type { Provider } from '@nestjs/common';
 
@@ -30,6 +31,7 @@ export type RelationshipQueue = Bull.Queue<RelationshipJobData>;
 export type ObjectStorageQueue = Bull.Queue;
 export type UserWebhookDeliverQueue = Bull.Queue<UserWebhookDeliverJobData>;
 export type SystemWebhookDeliverQueue = Bull.Queue<SystemWebhookDeliverJobData>;
+export type LlmRequestQueue = Bull.Queue<LlmRequestJobData>;
 
 const $system: Provider = {
 	provide: 'queue:system',
@@ -91,6 +93,11 @@ const $systemWebhookDeliver: Provider = {
 	inject: [DI.config],
 };
 
+const $llmRequest: Provider = {
+	provide: 'queue:llmRequest',
+	useFactory: (config: Config) => new Bull.Queue(QUEUE.LLM_REQUEST, baseQueueOptions(config, QUEUE.LLM_REQUEST)),
+	inject: [DI.config],
+};
 @Module({
 	imports: [
 	],
@@ -105,6 +112,7 @@ const $systemWebhookDeliver: Provider = {
 		$objectStorage,
 		$userWebhookDeliver,
 		$systemWebhookDeliver,
+		$llmRequest,
 	],
 	exports: [
 		$system,
@@ -117,6 +125,7 @@ const $systemWebhookDeliver: Provider = {
 		$objectStorage,
 		$userWebhookDeliver,
 		$systemWebhookDeliver,
+		$llmRequest,
 	],
 })
 export class QueueModule implements OnApplicationShutdown {
@@ -131,6 +140,7 @@ export class QueueModule implements OnApplicationShutdown {
 		@Inject('queue:objectStorage') public objectStorageQueue: ObjectStorageQueue,
 		@Inject('queue:userWebhookDeliver') public userWebhookDeliverQueue: UserWebhookDeliverQueue,
 		@Inject('queue:systemWebhookDeliver') public systemWebhookDeliverQueue: SystemWebhookDeliverQueue,
+		@Inject('queue:llmRequest') public llmRequestQueue: LlmRequestQueue,
 	) {}
 
 	public async dispose(): Promise<void> {
@@ -148,6 +158,7 @@ export class QueueModule implements OnApplicationShutdown {
 			this.objectStorageQueue.close(),
 			this.userWebhookDeliverQueue.close(),
 			this.systemWebhookDeliverQueue.close(),
+			this.llmRequestQueue.close(),
 		]);
 	}
 

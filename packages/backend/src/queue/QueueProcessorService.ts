@@ -45,6 +45,7 @@ import { BakeBufferedReactionsProcessorService } from './processors/BakeBuffered
 import { CleanProcessorService } from './processors/CleanProcessorService.js';
 import { AggregateRetentionProcessorService } from './processors/AggregateRetentionProcessorService.js';
 import { CleanRemoteNotesProcessorService } from './processors/CleanRemoteNotesProcessorService.js';
+import { LlmRequestProcessorService } from './processors/LlmRequestProcessorService.js';
 import { QueueLoggerService } from './QueueLoggerService.js';
 import { QUEUE, baseWorkerOptions } from './const.js';
 
@@ -87,6 +88,7 @@ export class QueueProcessorService implements OnApplicationShutdown {
 	private objectStorageQueueWorker: Bull.Worker;
 	private endedPollNotificationQueueWorker: Bull.Worker;
 	private postScheduledNoteQueueWorker: Bull.Worker;
+	private llmRequestQueueWorker: Bull.Worker;
 
 	constructor(
 		@Inject(DI.config)
@@ -128,6 +130,7 @@ export class QueueProcessorService implements OnApplicationShutdown {
 		private checkModeratorsActivityProcessorService: CheckModeratorsActivityProcessorService,
 		private cleanProcessorService: CleanProcessorService,
 		private cleanRemoteNotesProcessorService: CleanRemoteNotesProcessorService,
+		private llmRequestProcessorService: LlmRequestProcessorService,
 	) {
 		this.logger = this.queueLoggerService.logger;
 
@@ -538,6 +541,21 @@ export class QueueProcessorService implements OnApplicationShutdown {
 			});
 		}
 		//#endregion
+
+		//#region llm request
+		{
+			this.llmRequestQueueWorker = new Bull.Worker(QUEUE.LLM_REQUEST, async (job) => {
+				if (this.config.sentryForBackend) {
+					return Sentry.startSpan({ name: 'Queue: LlmRequest' }, () => this.llmRequestProcessorService.process(job));
+				} else {
+					return this.llmRequestProcessorService.process(job);
+				}
+			}, {
+				...baseWorkerOptions(this.config, QUEUE.LLM_REQUEST),
+				autorun: false,
+			});
+		}
+		//#endregion
 	}
 
 	@bindThis
@@ -553,6 +571,7 @@ export class QueueProcessorService implements OnApplicationShutdown {
 			this.objectStorageQueueWorker.run(),
 			this.endedPollNotificationQueueWorker.run(),
 			this.postScheduledNoteQueueWorker.run(),
+			this.llmRequestQueueWorker.run(),
 		]);
 	}
 
@@ -569,6 +588,7 @@ export class QueueProcessorService implements OnApplicationShutdown {
 			this.objectStorageQueueWorker.close(),
 			this.endedPollNotificationQueueWorker.close(),
 			this.postScheduledNoteQueueWorker.close(),
+			this.llmRequestQueueWorker.close(),
 		]);
 	}
 

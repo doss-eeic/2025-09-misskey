@@ -21,9 +21,6 @@ importers:
       '@google/genai':
         specifier: 1.23.0
         version: 1.23.0(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@6.0.5)
-      '@google/generative-ai':
-        specifier: 0.24.1
-        version: 0.24.1
       cssnano:
         specifier: 7.1.1
         version: 7.1.1(postcss@8.5.6)
@@ -2394,10 +2391,6 @@ packages:
     peerDependenciesMeta:
       '@modelcontextprotocol/sdk':
         optional: true
-
-  '@google/generative-ai@0.24.1':
-    resolution: {integrity: sha512-MqO+MLfM6kjxcKoy0p1wRzG3b4ZZXtPI+z2IE26UogS2Cm/XHO+7gGRBh6gcJsOiIVoH93UwKvW4HdgiOZCy9Q==}
-    engines: {node: '>=18.0.0'}
 
   '@hapi/address@5.1.1':
     resolution: {integrity: sha512-A+po2d/dVoY7cYajycYI43ZbYMXukuopIsqCjh5QzsBCipDtdofHntljDlpccMjIfTy6UOkg+5KPriwYch2bXA==}
@@ -12617,8 +12610,6 @@ snapshots:
       - encoding
       - supports-color
       - utf-8-validate
-
-  '@google/generative-ai@0.24.1': {}
 
   '@hapi/address@5.1.1':
     dependencies:
