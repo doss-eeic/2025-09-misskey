@@ -1562,12 +1562,20 @@ async function generateGeminiImage() {
 			type: 'success',
 			text: '画像が生成されました。プレビューをご確認ください。',
 		});
-	} catch (error) {
-		console.error('Error generating Gemini image:', error);
-		os.alert({
-			type: 'error',
-			text: '画像の生成中にエラーが発生しました。',
-		});
+	} catch (e: any) {
+		console.error('Error generating Gemini image:', e);
+		if (e.code === 'AI_REQUEST_QUEUED') {
+			os.alert({
+				type: 'success',
+				text: '生成がリクエストされました。\nしばらくお待ち下さい',
+			});
+		} else {
+			geminiErrorMessage.value = `ツイート案の生成中にエラーが発生しました: ${e.message || '不明なエラー'}`;
+			os.alert({
+				type: 'error',
+				text: '画像の生成中にエラーが発生しました。',
+			});
+		}
 	} finally {
 		geminiLoading.value = false;
 	}
