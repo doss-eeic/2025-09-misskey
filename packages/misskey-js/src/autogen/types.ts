@@ -4601,6 +4601,21 @@ export type components = {
             /** Format: date-time */
             createdAt: string;
             /** @enum {string} */
+            type: 'llmRequestSuccess';
+            noteDraft: components['schemas']['NoteDraft'];
+        } | {
+            /** Format: id */
+            id: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** @enum {string} */
+            type: 'llmRequestFailed';
+        } | {
+            /** Format: id */
+            id: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** @enum {string} */
             type: 'follow';
             user: components['schemas']['UserLite'];
             /** Format: id */

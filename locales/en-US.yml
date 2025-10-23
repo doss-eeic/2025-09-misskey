@@ -2710,8 +2710,8 @@ _notification:
     createToken: "Create access token"
     test: "Notification test"
     app: "Notifications from linked apps"
-    llmRequestSuccess: "AI assist generation has been completed"
-    llmRequestFailed: "Failed to AI assist generation"
+    llmRequestSuccess: "AI generation completed"
+    llmRequestFailed: "Failed to AI generation"
 
   _actions:
     followBack: "followed you back"

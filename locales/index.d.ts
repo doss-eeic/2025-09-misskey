@@ -10469,11 +10469,11 @@ export interface Locale extends ILocale {
          */
         "createTokenDescription": ParameterizedString<"text">;
         /**
-         * AIアシストによる生成が完了しました
+         * AIアシストによる生成完了
          */
         "llmRequestSuccess": string;
         /**
-         * AIアシストによる生成が失敗しました
+         * AIアシストによる生成失敗
          */
         "llmRequestFailed": string;
         "_types": {
@@ -10562,11 +10562,11 @@ export interface Locale extends ILocale {
              */
             "app": string;
             /**
-             * AIアシストによる生成が完了した
+             * AIアシストによる生成完了
              */
             "llmRequestSuccess": string;
             /**
-             * AIアシストによる生成が失敗した
+             * AIアシストによる生成失敗
              */
             "llmRequestFailed": string;
         };

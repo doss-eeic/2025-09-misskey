@@ -2763,8 +2763,8 @@ _notification:
   login: "ログインがありました"
   createToken: "アクセストークンが作成されました"
   createTokenDescription: "心当たりがない場合は「{text}」を通じてアクセストークンを削除してください。"
-  llmRequestSuccess: "AIアシストによる生成が完了しました"
-  llmRequestFailed: "AIアシストによる生成が失敗しました"
+  llmRequestSuccess: "AIアシストによる生成完了"
+  llmRequestFailed: "AIアシストによる生成失敗"
 
   _types:
     all: "すべて"
@@ -2788,8 +2788,8 @@ _notification:
     createToken: "アクセストークンの作成"
     test: "通知のテスト"
     app: "連携アプリからの通知"
-    llmRequestSuccess: "AIアシストによる生成が完了した"
-    llmRequestFailed: "AIアシストによる生成が失敗した"
+    llmRequestSuccess: "AIアシストによる生成完了"
+    llmRequestFailed: "AIアシストによる生成失敗"
 
   _actions:
     followBack: "フォローバック"
