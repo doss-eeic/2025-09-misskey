@@ -127,8 +127,8 @@ SPDX-License-Identifier: AGPL-3.0-only
         <div class="gemini-image-modal-content">
           <img :src="geminiImagePreview" alt="Generated Gemini Image" />
           <div class="gemini-image-modal-actions">
-            <button @click="confirmGeminiImage">承認</button>
-            <button @click="cancelGeminiImage">キャンセル</button>
+            <button class="_buttonPrimary" @click="confirmGeminiImage">保存</button>
+            <button class="_button" @click="cancelGeminiImage">キャンセル</button>
           </div>
         </div>
       </div>
@@ -1569,24 +1569,21 @@ async function generateGeminiImage() {
 
 function confirmGeminiImage() {
   if (geminiImagePreview.value) {
-    const newFile = {
-      id: `gemini-${Date.now()}`,
-      createdAt: new Date().toISOString(),
-      name: 'generated-image.png',
-      type: 'image/png',
-      md5: '',
-      size: geminiImagePreview.value.length,
-      isSensitive: false,
-      blurhash: null,
-      properties: {},
-      url: geminiImagePreview.value,
-      thumbnailUrl: '',
-      comment: '',
-      folderId: null,
-      userId: null,
-    };
+    const base64Data = geminiImagePreview.value.split(',')[1];
+    const binaryData = atob(base64Data);
+    const arrayBuffer = new Uint8Array(binaryData.length);
 
-    files.value.push(newFile);
+    for (let i = 0; i < binaryData.length; i++) {
+      arrayBuffer[i] = binaryData.charCodeAt(i);
+    }
+
+    const blob = new Blob([arrayBuffer], { type: 'image/png' });
+    const file = new File([blob], `generated-image-${Date.now()}.png`, {
+      type: 'image/png',
+    });
+
+    uploader.addFiles([file]);
+
     geminiImagePreview.value = null;
   }
 }
