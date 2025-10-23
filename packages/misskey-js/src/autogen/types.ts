@@ -2875,6 +2875,15 @@ export type paths = {
          */
         post: operations['llm___gen-note'];
     };
+    '/llm/suggest': {
+        /**
+         * llm/suggest
+         * @description No description provided.
+         *
+         *     **Credential required**: *No*
+         */
+        post: operations['llm___suggest'];
+    };
     '/meta': {
         /**
          * meta
@@ -28291,6 +28300,75 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
+    llm___suggest: {
+        requestBody: {
+            content: {
+                'application/json': {
+                    userQuery: string;
+                    noteDraft?: string | null;
+                };
+            };
+        };
+        responses: {
+            /** @description OK (with results) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': {
+                        suggestedText: string;
+                    };
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
                 };
             };
             /** @description Authentication error */

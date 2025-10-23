@@ -440,3 +440,4 @@ export * as 'chat/history' from './endpoints/chat/history.js';
 export * as 'chat/read-all' from './endpoints/chat/read-all.js';
 export * as 'v2/admin/emoji/list' from './endpoints/v2/admin/emoji/list.js';
 export * as 'llm/gen-note' from './endpoints/llm/gen-note.js';
+export * as 'llm/gen-image' from './endpoints/llm/gen-image.js';

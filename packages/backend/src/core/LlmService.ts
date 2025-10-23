@@ -6,7 +6,7 @@
 import { Injectable } from '@nestjs/common';
 import { bindThis } from '@/decorators.js';
 import { CacheService } from '@/core/CacheService.js';
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenAI, Modality} from '@google/genai';
 import dotenv from 'dotenv';
 
 @Injectable()
@@ -20,7 +20,7 @@ export class LlmService {
 
 	onModuleInit() {
 		dotenv.config();
-		
+
 		const apiKey = process.env.GEMINI_API_KEY;
 		console.log('Using Gemini API Key:', apiKey);
 			
@@ -74,6 +74,32 @@ export class LlmService {
 			
 		} catch (e: any) {
 			throw new Error(`Error generating text: ${e.message}`);
+		}
+	}
+
+	@bindThis
+	public async generateImage(prompt: string): Promise<string> {
+		try {
+			const response = await this.genAI.models.generateContent({
+				model: "models/gemini-2.0-flash-exp",
+				contents: prompt,
+				config: { responseModalities: [Modality.TEXT, Modality.IMAGE] },
+			});
+
+			if (response?.candidates?.[0]?.content?.parts) {
+					for (const part of response.candidates[0].content.parts) {
+							if (part.inlineData && part.inlineData.data) {
+									const imageData = part.inlineData.data;
+						return imageData;
+					}
+				}
+			} else {
+					throw new Error('No image data found in the response');
+			}
+			throw new Error('No image data found in the response');
+			// return "iVBORw0KGgoAAAANSUhEUgAAAAIAAAAECAYAAACk7+45AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAXSURBVBhXY/z///9/BgYGBiYGKMBkAACGLgQEllwMjQAAAABJRU5ErkJggg=="
+		} catch (e: any) {
+			throw new Error(`Error generating image: ${e.message}`);
 		}
 	}
 }
