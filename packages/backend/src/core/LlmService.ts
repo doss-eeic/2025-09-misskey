@@ -5,7 +5,7 @@
 
 import { randomUUID } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenAI, Modality } from '@google/genai';
 import dotenv from 'dotenv';
 import * as Redis from 'ioredis';
 import { bindThis } from '@/decorators.js';
@@ -176,6 +176,31 @@ export class LlmService {
 		} catch (e: any) {
 			console.error('Failed to add LLM job to queue:', e);
 			throw new Error(`Error adding generate text job: ${e.message}`);
+		}
+	}
+
+	public async generateImage(prompt: string): Promise<string> {
+		try {
+			const response = await this.genAI.models.generateContent({
+				model: 'models/gemini-2.0-flash-exp',
+				contents: prompt,
+				config: { responseModalities: [Modality.TEXT, Modality.IMAGE] },
+			});
+
+			if (response?.candidates?.[0]?.content?.parts) {
+				for (const part of response.candidates[0].content.parts) {
+					if (part.inlineData && part.inlineData.data) {
+						const imageData = part.inlineData.data;
+						return imageData;
+					}
+				}
+			} else {
+				throw new Error('No image data found in the response');
+			}
+			throw new Error('No image data found in the response');
+			// return "iVBORw0KGgoAAAANSUhEUgAAAAIAAAAECAYAAACk7+45AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAXSURBVBhXY/z///9/BgYGBiYGKMBkAACGLgQEllwMjQAAAABJRU5ErkJggg=="
+		} catch (e: any) {
+			throw new Error(`Error generating image: ${e.message}`);
 		}
 	}
 }

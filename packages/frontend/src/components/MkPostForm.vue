@@ -113,6 +113,24 @@ SPDX-License-Identifier: AGPL-3.0-only
 			>
 				<i class="ti ti-sparkles"></i> 新規生成
 			</button>
+			<button
+				class="_button"
+				:disabled="geminiLoading"
+				@click="generateGeminiImage"
+			>
+				<i class="ti ti-brush"></i> 画像生成
+			</button>
+		</div>
+	</div>
+	<div v-if="showGeminiImageGenerator" :class="$style.geminiImageGenerator">
+		<div v-if="geminiImagePreview" class="gemini-image-modal">
+			<div class="gemini-image-modal-content">
+				<img :src="geminiImagePreview" alt="Generated Gemini Image"/>
+				<div class="gemini-image-modal-actions">
+					<button @click="confirmGeminiImage">承認</button>
+					<button @click="cancelGeminiImage">キャンセル</button>
+				</div>
+			</div>
 		</div>
 	</div>
 	<footer :class="$style.footer">
@@ -1420,6 +1438,8 @@ const geminiErrorMessage = ref<string | null>(null);
 const geminiPromptInputEl = ref<HTMLTextAreaElement | null>(null);
 const showGeminiPromptInput = ref(false); // カスタムプロンプト入力欄の表示状態
 const customGeminiPrompt = ref(''); // カスタムプロンプトの内容
+const geminiImagePreview = ref<string | null>(null);
+const showGeminiImageGenerator = ref(false); // 画像生成セクションの表示状態
 
 async function callGeminiApi(promptText: string, draftText: string | null, mode: 'replace' | 'append') {
 	geminiLoading.value = true;
@@ -1519,6 +1539,67 @@ async function submitForGeneration() {
 	customGeminiPrompt.value = '';
 }
 
+async function generateGeminiImage() {
+	console.log('Generating Gemini image with prompt:', customGeminiPrompt.value);
+
+	if (!customGeminiPrompt.value.trim()) {
+		return os.alert({ type: 'info', text: 'プロンプトを入力してください。' });
+	}
+
+	geminiLoading.value = true;
+
+	try {
+		const response: { imageData: string } = await misskeyApi('llm/gen-image', {
+			prompt: customGeminiPrompt.value,
+		});
+		showGeminiImageGenerator.value = true;
+
+		console.log('Gemini Image API Response:', response);
+
+		geminiImagePreview.value = `data:image/png;base64,${response.imageData}`;
+
+		os.alert({
+			type: 'success',
+			text: '画像が生成されました。プレビューをご確認ください。',
+		});
+	} catch (error) {
+		console.error('Error generating Gemini image:', error);
+		os.alert({
+			type: 'error',
+			text: '画像の生成中にエラーが発生しました。',
+		});
+	} finally {
+		geminiLoading.value = false;
+	}
+}
+
+function confirmGeminiImage() {
+	if (geminiImagePreview.value) {
+		const newFile = {
+			id: `gemini-${Date.now()}`,
+			createdAt: new Date().toISOString(),
+			name: 'generated-image.png',
+			type: 'image/png',
+			md5: '',
+			size: geminiImagePreview.value.length,
+			isSensitive: false,
+			blurhash: null,
+			properties: {},
+			url: geminiImagePreview.value,
+			thumbnailUrl: '',
+			comment: '',
+			folderId: null,
+			userId: null,
+		};
+
+		files.value.push(newFile);
+		geminiImagePreview.value = null;
+	}
+}
+
+function cancelGeminiImage() {
+	geminiImagePreview.value = null;
+}
 </script>
 
 <style lang="scss" module>
@@ -1888,7 +1969,7 @@ html[data-color-scheme=light] .preview {
 	}
 
 	.submit {
-		margin: 8px 8px 8px 4px;
+		margin: 8px 8px 8px  4px;
 	}
 
 	.toSpecified {
@@ -1927,10 +2008,10 @@ html[data-color-scheme=light] .preview {
 		grid-template-columns: repeat(auto-fill, minmax(38px, 1fr));
 	}
 
-	.headerRight {
-		gap: 0;
-	}
+}
 
+.headerRight {
+	gap: 0;
 }
 
 .geminiPromptContainer {
@@ -1938,7 +2019,7 @@ html[data-color-scheme=light] .preview {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    border-top: 1px solid var(--MI_THEME-divider);
+    border-top:  1px solid var(--MI_THEME-divider);
     background: light-dark(rgba(0, 0, 0, 0.03), rgba(255, 255, 255, 0.03));
 }
 
@@ -1982,4 +2063,51 @@ html[data-color-scheme=light] .preview {
     }
 }
 
+.geminiImageGenerator {
+  margin-top: 16px;
+}
+.geminiImagePreview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 8px;
+}
+.geminiImagePreview img {
+  max-width: 100%;
+  border: 1px solid #ccc;
+  margin-bottom: 8px;
+}
+
+.gemini-image-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.gemini-image-modal-content {
+  max-width: 90%;
+  max-height: 90%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.gemini-image-modal-content img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.gemini-image-modal-actions {
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-around;
+}
 </style>
