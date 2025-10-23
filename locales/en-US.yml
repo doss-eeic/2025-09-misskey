@@ -2688,7 +2688,7 @@ _notification:
   login: "Someone logged in"
   createToken: "An access token has been created"
   createTokenDescription: "If you have no idea, delete the access token through \"{text}\"."
-  llmRequestSuccess: "AI assist generation has been completed"
+  llmRequestSuccess: "AI generation completed"
   llmRequestFailed: "Failed to AI assist generation"
   _types:
     all: "All"
