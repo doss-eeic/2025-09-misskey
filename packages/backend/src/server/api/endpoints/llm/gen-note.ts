@@ -80,7 +80,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			if (!await this.llmService.checkGlobalRateLimits()) {
 				// return 202 Accepted
-				this.llmService.addGenerateTextJob(me.id, prompt);
+				this.llmService.addLlmGenerateJob(me.id, prompt, 'text');
 				throw new ApiError(meta.errors.aiRequestQueued);
 			} else {
 				const generatedText = await this.llmService.generateText(prompt);

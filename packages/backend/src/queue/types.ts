@@ -137,6 +137,7 @@ export type UserWebhookDeliverJobData<T extends WebhookEventTypes = WebhookEvent
 export type LlmRequestJobData = {
 	userId: MiUser['id'];
 	prompt: string,
+	modality: 'text' | 'image'
 	eventId: string;
 };
 

@@ -154,31 +154,6 @@ export class LlmService {
 		}
 	}
 
-	@bindThis
-	public async addGenerateTextJob(userId: string, prompt: string): Promise<void> {
-		try {
-			// 1. ジョブIDを生成 (llm/get-note で結果を取得するために使用)
-
-			await this.queueService.llmRequestQueue.add('llmGenerateText', {
-				userId: userId,
-				prompt: prompt,
-				eventId: randomUUID(),
-			}, {
-				removeOnComplete: {
-					age: 3600 * 24 * 7, // keep up to 7 days
-					count: 1000, // 完了ジョブを1000件まで保持
-				},
-				removeOnFail: {
-					age: 3600 * 24 * 7, // keep up to 7 days
-					count: 1000, // 失敗ジョブを1000件まで保持
-				},
-			});
-		} catch (e: any) {
-			console.error('Failed to add LLM job to queue:', e);
-			throw new Error(`Error adding generate text job: ${e.message}`);
-		}
-	}
-
 	public async generateImage(prompt: string): Promise<string> {
 		try {
 			const response = await this.genAI.models.generateContent({
@@ -201,6 +176,31 @@ export class LlmService {
 			// return "iVBORw0KGgoAAAANSUhEUgAAAAIAAAAECAYAAACk7+45AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAXSURBVBhXY/z///9/BgYGBiYGKMBkAACGLgQEllwMjQAAAABJRU5ErkJggg=="
 		} catch (e: any) {
 			throw new Error(`Error generating image: ${e.message}`);
+		}
+	}
+
+	@bindThis
+	public async addLlmGenerateJob(userId: string, prompt: string, modality: 'text' | 'image'): Promise<void> {
+		const jobName = modality === 'text' ? 'llmGenerateText' : 'llmGenerateImage';
+		try {
+			await this.queueService.llmRequestQueue.add(jobName, {
+				userId: userId,
+				prompt: prompt,
+				modality: modality,
+				eventId: randomUUID(),
+			}, {
+				removeOnComplete: {
+					age: 3600 * 24 * 7, // keep up to 7 days
+					count: 1000, // 完了ジョブを1000件まで保持
+				},
+				removeOnFail: {
+					age: 3600 * 24 * 7, // keep up to 7 days
+					count: 1000, // 失敗ジョブを1000件まで保持
+				},
+			});
+		} catch (e: any) {
+			console.error('Failed to add LLM job to queue:', e);
+			throw new Error(`Error adding generate text job: ${e.message}`);
 		}
 	}
 }
