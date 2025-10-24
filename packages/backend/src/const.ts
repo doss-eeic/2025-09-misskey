@@ -3,6 +3,13 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+// デモ用のパラメタ
+export const LIMIT_PER_MINUTE_GLOBAL = 10;
+// export const LIMIT_PER_MINUTE_GLOBAL = 0;
+export const LIMIT_PER_HOUR_USER = 100;
+export const BUFFER_PENDING_TIME = 200;
+// export const BUFFER_PENDING_TIME = 5000;
+
 export const MAX_NOTE_TEXT_LENGTH = 3000;
 
 export const USER_ONLINE_THRESHOLD = 1000 * 60 * 10; // 10min

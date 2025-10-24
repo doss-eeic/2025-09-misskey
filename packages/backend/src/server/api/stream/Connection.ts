@@ -15,10 +15,10 @@ import type { StreamEventEmitter, GlobalEvents } from '@/core/GlobalEventService
 import { ChannelFollowingService } from '@/core/ChannelFollowingService.js';
 import { isJsonObject } from '@/misc/json-value.js';
 import type { JsonObject, JsonValue } from '@/misc/json-value.js';
+import { BUFFER_PENDING_TIME } from '@/const.js';
 import type { ChannelsService } from './ChannelsService.js';
 import type { EventEmitter } from 'events';
 import type Channel from './channel.js';
-
 const MAX_CHANNELS_PER_CONNECTION = 32;
 
 /**
@@ -235,7 +235,7 @@ export default class Connection {
 		this._flushTimer ??= setTimeout(() => {
 			if (this._isClientVisible === true) this.flushBuffer();
 			this._flushTimer = null;
-		}, 0.2);
+		}, BUFFER_PENDING_TIME);
 	}
 	@bindThis
 	private flushBuffer() {

@@ -13,6 +13,7 @@ import { CacheService } from '@/core/CacheService.js';
 import type { MiUser } from '@/models/User.js';
 import { DI } from '@/di-symbols.js';
 import { QueueService } from '@/core/QueueService.js';
+import { LIMIT_PER_MINUTE_GLOBAL, LIMIT_PER_HOUR_USER } from '@/const.js';
 
 @Injectable()
 export class LlmService {
@@ -41,7 +42,6 @@ export class LlmService {
 	@bindThis
 	public async checkUserRateLimits(userId: string): Promise<boolean> {
 		const now = new Date();
-		const LIMIT_PER_USER_PER_HOUR = 100; // ユーザーごと: 1時間あたりn回
 
 		// ユーザーごとのレートリミット (1時間ごと)
 		const currentHour = now.toISOString().substring(0, 13); // 'YYYY-MM-DDTHH'
@@ -62,7 +62,7 @@ export class LlmService {
 			if (userIncrResult[0] !== null) throw userIncrResult[0];
 			const userCount = userIncrResult[1] as number;
 
-			if (userCount > LIMIT_PER_USER_PER_HOUR) {
+			if (userCount > LIMIT_PER_HOUR_USER) {
 				console.warn(`レートリミット超過 (ユーザー): ${userId}, カウント: ${userCount}`);
 				return false;
 			}
@@ -70,13 +70,13 @@ export class LlmService {
 			return true;
 		} catch (error) {
 			console.error('error in user rate limit check:', error);
+			return false;
 		}
 	}
 
 	@bindThis
 	public async checkGlobalRateLimits(): Promise<boolean> {
 		const now = new Date();
-		const LIMIT_GLOBAL_PER_MINUTE = 0; // サーバー全体: 1分あたりn回
 
 		// サーバー全体のレートリミット (1分ごと)
 		const currentMinute = now.toISOString().substring(0, 16); // 'YYYY-MM-DDTHH:mm'
@@ -97,7 +97,7 @@ export class LlmService {
 			if (globalIncrResult[0] !== null) throw globalIncrResult[0];
 			const globalCount = globalIncrResult[1] as number;
 
-			if (globalCount > LIMIT_GLOBAL_PER_MINUTE) {
+			if (globalCount > LIMIT_PER_MINUTE_GLOBAL) {
 				console.warn(`レートリミット超過 (グローバル), カウント: ${globalCount}`);
 				return false;
 			}
@@ -118,11 +118,6 @@ export class LlmService {
 			});
 
 			let generatedText = '';
-
-			if (response == null) {
-				throw new Error('No response from Gemini API');
-			}
-
 			const textProp = (response as any).text;
 
 			if (typeof textProp === 'function') {
