@@ -90,12 +90,19 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<MkNotePreview v-if="showPreview" :class="$style.preview" :text="text" :files="files" :poll="poll ?? undefined" :useCw="useCw" :cw="cw" :user="postAccount ?? $i"/>
 	<div v-if="showingOptions" style="padding: 8px 16px;">
 	</div>
+	<div v-if="geminiImagePreview" :class="$style.geminiImageContainer">
+		<img :src="geminiImagePreview" alt="Generated Gemini Image"/>
+		<div :class="$style.geminiButtonContainer">
+			<button class="_button" @click="cancelGeminiImage">キャンセル</button>
+			<button class="_buttonPrimary" @click="confirmGeminiImage">保存</button>
+		</div>
+	</div>
 	<div v-if="showGeminiPromptInput" :class="$style.geminiPromptContainer">
 		<textarea
 			ref="geminiPromptInputEl"
 			v-model="customGeminiPrompt"
 			:class="$style.geminiPromptInput"
-			placeholder="指示を入力"
+			placeholder="プロンプトを入力"
 			rows="4"
 		></textarea>
 		<div :class="$style.geminiButtonContainer">
@@ -120,17 +127,6 @@ SPDX-License-Identifier: AGPL-3.0-only
 			>
 				<i class="ti ti-brush"></i> 画像生成
 			</button>
-		</div>
-	</div>
-	<div v-if="showGeminiImageGenerator" :class="$style.geminiImageGenerator">
-		<div v-if="geminiImagePreview" class="gemini-image-modal">
-			<div class="gemini-image-modal-content">
-				<img :src="geminiImagePreview" alt="Generated Gemini Image"/>
-				<div class="gemini-image-modal-actions">
-					<button class="_buttonPrimary" @click="confirmGeminiImage">保存</button>
-					<button class="_button" @click="cancelGeminiImage">キャンセル</button>
-				</div>
-			</div>
 		</div>
 	</div>
 	<footer :class="$style.footer">
@@ -1439,7 +1435,6 @@ const geminiPromptInputEl = ref<HTMLTextAreaElement | null>(null);
 const showGeminiPromptInput = ref(false); // カスタムプロンプト入力欄の表示状態
 const customGeminiPrompt = ref(''); // カスタムプロンプトの内容
 const geminiImagePreview = ref<string | null>(null);
-const showGeminiImageGenerator = ref(false); // 画像生成セクションの表示状態
 
 async function callGeminiApi(promptText: string, draftText: string | null, mode: 'replace' | 'append') {
 	geminiLoading.value = true;
@@ -1552,7 +1547,6 @@ async function generateGeminiImage() {
 		const response: { imageData: string } = await misskeyApi('llm/gen-image', {
 			prompt: customGeminiPrompt.value,
 		});
-		showGeminiImageGenerator.value = true;
 
 		console.log('Gemini Image API Response:', response);
 
@@ -2046,7 +2040,7 @@ html[data-color-scheme=light] .preview {
 }
 
 .geminiPromptSubmitButton {
-    align-self: flex-end; // 右寄せ
+    align-self: flex-end;
     padding: 8px 16px;
     font-size: 0.9em;
     border-radius: 6px;
@@ -2068,51 +2062,21 @@ html[data-color-scheme=light] .preview {
     }
 }
 
-.geminiImageGenerator {
-  margin-top: 16px;
-}
-.geminiImagePreview {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 8px;
-}
-.geminiImagePreview img {
-  max-width: 100%;
-  border: 1px solid #ccc;
-  margin-bottom: 8px;
+.geminiImageContainer {
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+	align-items: center;
+	justify-content: center;
+    gap: 8px;
+    border-top:  1px solid var(--MI_THEME-divider);
+    background: light-dark(rgba(0, 0, 0, 0.03), rgba(255, 255, 255, 0.03));
 }
 
-.gemini-image-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
+.geminiImageContainer img {
+	width: 80%;
+	border-radius: 8px;
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
-.gemini-image-modal-content {
-  max-width: 90%;
-  max-height: 90%;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.gemini-image-modal-content img {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-}
-
-.gemini-image-modal-actions {
-  margin-top: 10px;
-  display: flex;
-  justify-content: space-around;
-}
 </style>
