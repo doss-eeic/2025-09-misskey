@@ -95,6 +95,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<div :class="$style.geminiButtonContainer">
 			<button class="_button" @click="cancelGeminiImage">キャンセル</button>
 			<button class="_buttonPrimary" @click="confirmGeminiImage">保存</button>
+			<button class="_button" @click="downloadGeminiImage">
+				<i class="ti ti-download"></i> ダウンロード
+			</button>
 		</div>
 	</div>
 	<div v-if="showGeminiPromptInput" :class="$style.geminiPromptContainer">
@@ -1599,6 +1602,29 @@ function confirmGeminiImage() {
 function cancelGeminiImage() {
 	geminiImagePreview.value = null;
 }
+
+function downloadGeminiImage() {
+    if (geminiImagePreview.value) {
+        // Base64データをBlobに変換
+        const base64Data = geminiImagePreview.value.split(',')[1];
+        const binaryData = atob(base64Data);
+        const arrayBuffer = new Uint8Array(binaryData.length);
+
+        for (let i = 0; i < binaryData.length; i++) {
+            arrayBuffer[i] = binaryData.charCodeAt(i);
+        }
+
+        const blob = new Blob([arrayBuffer], { type: 'image/png' });
+
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `generated-image-${Date.now()}.png`;
+        link.click();
+
+        URL.revokeObjectURL(link.href);
+    }
+}
+
 </script>
 
 <style lang="scss" module>
