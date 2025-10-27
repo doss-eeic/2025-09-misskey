@@ -94,7 +94,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<img :src="geminiImagePreview" alt="Generated Gemini Image"/>
 		<div :class="$style.geminiButtonContainer">
 			<button class="_button" @click="cancelGeminiImage">キャンセル</button>
-			<button class="_buttonPrimary" @click="confirmGeminiImage">保存</button>
+			<button class="_buttonPrimary" @click="confirmGeminiImage">決定</button>
 			<button class="_button" @click="downloadGeminiImage">
 				<i class="ti ti-download"></i> ダウンロード
 			</button>
