@@ -2043,6 +2043,7 @@ html[data-color-scheme=light] .preview {
     padding: 12px 16px;
     display: flex;
     flex-direction: column;
+	justify-content: center;
     gap: 8px;
     border-top:  1px solid var(--MI_THEME-divider);
     background: light-dark(rgba(0, 0, 0, 0.03), rgba(255, 255, 255, 0.03));
@@ -2050,7 +2051,7 @@ html[data-color-scheme=light] .preview {
 
 .geminiPromptInput {
     display: block;
-    width: 100%;
+    width: 95%;
     padding: 8px 12px;
     font-size: 0.95em;
     border: 1px solid var(--MI_THEME-divider);
